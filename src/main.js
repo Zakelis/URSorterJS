@@ -4,7 +4,7 @@ const {Computations} = require('./Computations');
 function main() {
     const parsedSheetData = SheetParser.parseCSVToJSON('../data/sheetData.csv');
 
-    console.log(parsedSheetData)
+    //console.log(parsedSheetData["mocks"])
 
     const bossDataJSON =
         {
@@ -49,9 +49,9 @@ function main() {
     }
     console.log();*/
 
-    /*const computations = new Computations(bossDataJSON["bosses"]);
-    computations.feedPlayerHits(parsedSheetData);
-    computations.genSolutions();*/
+    const computations = new Computations(bossDataJSON["bosses"]);
+    computations.feedPlayerHits(parsedSheetData["mocks"]);
+    computations.genSolutions();
 }
 
 if (require.main === module) {

@@ -4,11 +4,13 @@ const Utilities = require('./Utilities');
 class Player {
     constructor(name, b1Name, b2Name, b3Name, b4Name, b5Name) {
         this.name = name;
-        this.synchro = 0;
         this.allHits = [];
         this.hits = [];
         this.bossesNames = [b1Name, b2Name, b3Name, b4Name, b5Name];
-        this.meanOfHitsWeights = 1;
+        this.hitsLeft = 3;
+    }
+
+    resetHitCount() {
         this.hitsLeft = 3;
     }
 
@@ -19,20 +21,20 @@ class Player {
         }
 
         for (const parsedHit of hitLines) {
-            if (this.name === parsedHit[0]) {
+            if (this.name === parsedHit["player"]) {
                 this.feedHit(parsedHit);
             }
         }
     }
 
     feedHit(hitLine) {
-        const dmg = parseInt(hitLine[1].replace(/,/g, ""), 10) * 1_000_000;
-        const p1 = hitLine[2];
-        const p2 = hitLine[3];
-        const p3 = hitLine[4];
-        const p4 = hitLine[5];
-        const p5 = hitLine[6];
-        const bossName = hitLine[7];
+        const dmg = hitLine["damage"] * 1_000_000;
+        const p1 = hitLine["p1"];
+        const p2 = hitLine["p2"];
+        const p3 = hitLine["p3"];
+        const p4 = hitLine["p4"];
+        const p5 = hitLine["p5"];
+        const bossName = hitLine["boss"];
         const hit = new Hit(this.name, dmg, p1, p2, p3, p4, p5, bossName);
 
         this.bossesNames.forEach((bName, i) => {
@@ -105,32 +107,6 @@ class Player {
             allHitsList.push(...hitList);
         }
         return allHitsList;
-    }
-
-    adjustMeanOfHitsWeights() {
-        const allHits = this.getHits();
-        const total = allHits.reduce((sum, hit) => sum + hit.playerWeight, 0);
-        this.meanOfHitsWeights = total / this.getNumberOfAllHits();
-    }
-
-    adjustHitsWeights() {
-        let highestHit = 0;
-
-        this.hits.forEach(([_, hitList]) => {
-            hitList.forEach(hit => {
-                if (hit.dmg > highestHit) {
-                    highestHit = hit.dmg;
-                }
-            });
-        });
-
-        this.hits.forEach(([_, hitList]) => {
-            hitList.forEach(hit => {
-                hit.playerWeight = hit.dmg / highestHit;
-            });
-        });
-
-        this.adjustMeanOfHitsWeights();
     }
 }
 

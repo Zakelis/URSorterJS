@@ -8,15 +8,13 @@ class Hit {
         this.p4 = p4;
         this.p5 = p5;
         this.bossName = bossName;
-        this.playerWeight = 1;
-        this.bossWeight = 1;
     }
 
     getInfoInHitRoute(playerHitCount, currDmg, hitIndex, isLast, bossHP) {
         const hitDmgPercentage = +(this.dmg / bossHP * 100).toFixed(3);
         const hpLeft = Math.max(bossHP - currDmg, 0);
         const hpLeftPercentage = +(Math.max(hpLeft / bossHP * 100, 0)).toFixed(3);
-        const isLastText = isLast ? "KILL - Hit restored" : "";
+        const isLastText = isLast ? "KILL" : "";
 
         return {
             hit_index: hitIndex,
@@ -36,7 +34,7 @@ class Hit {
     }
 
     getInfo() {
-        return `${this.playerName} hit against ${this.bossName} : ${this.dmg} with comp : ${this.returnCompString()} --- Player weight : ${this.playerWeight.toFixed(3)} --- Boss weight : ${this.bossWeight.toFixed(3)}`;
+        return `${this.playerName} hit against ${this.bossName} : ${this.dmg} with comp : ${this.returnCompString()}`;
     }
 
     dumpInfo() {

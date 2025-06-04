@@ -6,6 +6,24 @@ class Boss {
         this.hp = hp;
         this.availableHits = [];
         this.finalHits = [];
+        this.overkillDamage = 0;
+        this.overkillPercentage = 0;
+    }
+
+    resetHitRoute() {
+        this.finalHits = []
+        this.overkillDamage = 0;
+        this.overkillPercentage = 0;
+    }
+
+    dumpHitRouteStats() {
+        console.log("Boss killed in", this.finalHits.length, "hits :\n");
+        for (const hit of this.finalHits)
+        {
+            hit.dumpInfo();
+        }
+        console.log("Overkill damage :", this.overkillDamage, "(" + this.overkillPercentage, "%)");
+        console.log("\n");
     }
 
     generateHitRouteData(players, errorMarginPercentage, maxOverkillPercentage) {
@@ -25,17 +43,20 @@ class Boss {
             isLast = hitIndex === this.finalHits.length - 1;
             currDmg += hit.dmg;
             const player = players.find(p => p.name === hit.playerName);
-            if (player) playerHitCount = player.hitsLeft;
+            if (player)
+            {
+                playerHitCount = player.hitsLeft;
+            }
 
             const hitInfo = hit.dumpHitStatusInHitRoute(playerHitCount, currDmg, hitIndex + 1, isLast, this.hp);
             routeData.hits.push(hitInfo);
         });
 
-        const overkillDmg = Math.abs(this.hp - currDmg);
-        const overkillDmgPercentage = +(overkillDmg / this.hp * 100).toFixed(3);
+        this.overkillDamage = Math.abs(this.hp - currDmg);
+        this.overkillPercentage = +(this.overkillDamage / this.hp * 100).toFixed(3);
         routeData.overkill_damage = {
-            damage: overkillDmg,
-            percentage: overkillDmgPercentage
+            damage: this.overkillDamage,
+            percentage: this.overkillPercentage
         };
 
         return routeData;
@@ -80,10 +101,11 @@ class Boss {
 
     findClosestCombination(players, maxOverkillPercentage) {
         const totalPossible = this.availableHits.reduce((acc, hit) => acc + hit.dmg, 0);
-        if (totalPossible < this.hp) {
+       if (totalPossible < this.hp) {
             console.log("Not reachable");
             return;
         }
+        //this.dumpAvailableHits()
 
         let sum = 0;
         const combination = [];
@@ -109,15 +131,13 @@ class Boss {
                     let remainingHits = Utilities.filterSubList(this.availableHits, combination)
                         .filter(h => this.canPlayerHit(h, players) && !this.hasPlayerAlreadyHit(combination, h));
 
-                    remainingHits = remainingHits.sort((a, b) => b.playerWeight - a.playerWeight);
-
                     const remainingHP = this.hp - sum;
                     const lastHits = this.determineLastHits(remainingHits, remainingHP);
                     combination.push(...lastHits);
                     this.finalHits = Utilities.getReversedList(combination);
                     return this.finalHits;
                 }
-                if (hit.bossWeight > 0.01) {
+                else {
                     combination.push(hit);
                     sum += hit.dmg;
                 }
