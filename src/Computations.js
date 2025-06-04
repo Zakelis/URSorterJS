@@ -301,46 +301,22 @@ class Computations {
             return true;
         });
 
-        console.log("Number of unique solutions after filtering", this.allHitRoutes.length);
+        //console.log("Number of unique solutions after filtering", this.allHitRoutes.length);
+        // TODO RESORT THE boss output in hit routes to the passed bosses JSON order for consistency
         this.bestHitRoute = this.allHitRoutes[0];
     }
 
     genSolutions() {
-        const jsonOutput = {
-            runtime_date: new Date().toISOString().replace('T', ' ').split('.')[0] + " UTC+0",
-            bosses: []
-        };
-
-        // 1 TRY
-        // TODO remove
-        this.pregenHitRoute();
-        for (const boss of this.bosses) {
-                this.initBossHits(this.hitsDone, boss);
-                this.updateHitPlayerWeight();
-                this.updateHitBossWeight(boss.name);
-                const bossHits = this.computeOptimalHits(boss);
-                this.updatePlayerHitCount(bossHits);
-                this.appendToIgnoredHits(bossHits);
-
-                jsonOutput.bosses.push(
-                    boss.generateHitRouteData(
-                        this.players,
-                        this.errorMarginPercentage,
-                        this.maxOverkillPercentage
-                    )
-                );
-
-                boss.dumpHitRouteStats();
-        }
-
         this.genBestHitRoute();
-        this.dumpBestHitRouteStats(); // Best solution
+
+        // Debug for validation purposes
+        /*this.dumpBestHitRouteStats(); // Best solution
         this.dumpHitRouteStats(1); // 2nd best solution
         this.dumpHitRouteStats((this.allHitRoutes.length / 2).toFixed(0)); // Middle solution
-        this.dumpHitRouteStats(this.allHitRoutes.length - 1); // worst solution
+        this.dumpHitRouteStats(this.allHitRoutes.length - 1); // worst solution*/
 
         // Print the final properly formatted JSON output
-        //console.log(JSON.stringify(jsonOutput, null, 4));
+        console.log(JSON.stringify(this.bestHitRoute, null, 4));
     }
 }
 
