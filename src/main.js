@@ -4,7 +4,7 @@ const {Computations} = require('./Computations');
 function main() {
     const parsedSheetData = SheetParser.parseCSVToJSON('../data/sheetData.csv');
 
-    //console.log(parsedSheetData["mocks"])
+    //console.log(parsedSheetData)
 
     const bossDataJSON =
         {
