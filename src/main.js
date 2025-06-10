@@ -2,8 +2,10 @@ const SheetParser = require('./SheetParser');
 const {Computations} = require('./Computations');
 
 function main() {
+    // Placeholder data, replace with wanted JSON as needed
     const parsedSheetData = SheetParser.parseCSVToJSON('../data/sheetData.csv');
 
+    // Mocks JSON formatting is as following :
     //console.log(parsedSheetData)
 
     const bossDataJSON =
@@ -43,11 +45,6 @@ function main() {
                     }
                 ]
         }
-
-    /*for (const boss of bossDataJSON) {
-        console.log(boss);
-    }
-    console.log();*/
 
     const computations = new Computations(bossDataJSON["bosses"]);
     computations.feedPlayerHits(parsedSheetData["mocks"]);

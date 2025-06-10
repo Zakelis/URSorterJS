@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
+// TODO : Remove this crap when args will be passed as JSON
+
 function parseBossDataCSV(filePath) {
     const data = ["bosses", []];
     try {

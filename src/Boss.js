@@ -16,6 +16,7 @@ class Boss {
         this.overkillPercentage = 0;
     }
 
+    // Debug
     dumpHitRouteStats() {
         console.log("Boss killed in", this.finalHits.length, "hits :\n");
         for (const hit of this.finalHits)
@@ -26,6 +27,7 @@ class Boss {
         console.log("\n");
     }
 
+    // Hit route JSON formatting
     generateHitRouteData(players, errorMarginPercentage, maxOverkillPercentage) {
         const routeData = {
             boss_name: this.name,
@@ -62,30 +64,17 @@ class Boss {
         return routeData;
     }
 
-    getClosestValidHitFromAnotherPlayer(combination, hitsLeft, currHit, players) {
-        const playerName = currHit.playerName;
-        for (let i = 0; i < hitsLeft.length; i++) {
-            const hit = hitsLeft[i];
-            if (hit.playerName !== playerName &&
-                this.canPlayerHit(hit, players) &&
-                !this.hasPlayerAlreadyHit(combination, hit)) {
-                return [i, hit];
-            }
-        }
-        return null;
-    }
-
     canPlayerHit(hit, playerList) {
         const player = playerList.find(p => p.name === hit.playerName);
         return player ? player.hitsLeft > 0 : false;
     }
 
+    // TODO : It is unlikely that one player will hit the same level 1 boss more than one time, will keep an eye on this if the sorter can handle level 2 too
     hasPlayerAlreadyHit(combination, currHit) {
         return combination.some(hit => hit.playerName === currHit.playerName);
     }
 
     determineLastHits(hitsLeft, HP) {
-        //console.log(`Starting LAST hits computation for boss: ${this.name}, remaining HP: ${HP}`);
         let sum = 0;
         const lastHits = [];
 
@@ -100,15 +89,17 @@ class Boss {
     }
 
     findClosestCombination(players, maxOverkillPercentage) {
-        const totalPossible = this.availableHits.reduce((acc, hit) => acc + hit.dmg, 0);
-       if (totalPossible < this.hp) {
+        const totalPossibleDMG = this.availableHits.reduce((acc, hit) => acc + hit.dmg, 0);
+        if (totalPossibleDMG < this.hp) {
             console.log("Not reachable");
+            // TODO : Not likely to happen, will add a failsafe here
             return;
         }
-        //this.dumpAvailableHits()
 
         let sum = 0;
         const combination = [];
+
+        // TODO : Pretty sure the hit backtracking can be improved... Priority when the JS refactor is done
 
         for (let i = 0; i < this.availableHits.length; i++) {
             const hit = this.availableHits[i];
@@ -116,6 +107,7 @@ class Boss {
 
             if (sum + hit.dmg <= this.hp) {
                 const nextHit = this.availableHits[i + 1];
+                // TODO : Priority to element specialists can be done here
                 if (nextHit && (sum + hit.dmg + nextHit.dmg > this.hp)) {
                     if (hit.playerName === nextHit.playerName) continue;
                     if (this.hasPlayerAlreadyHit(combination, nextHit)) continue;
@@ -142,6 +134,10 @@ class Boss {
                     sum += hit.dmg;
                 }
             }
+            // TODO : Can handle oneshots here
+            // else if (sum + hit.dmg <= this.hp * maxOverkillPercentage) {
+            //    Add hit and return
+            // }
 
             if (sum >= this.hp) {
                 this.finalHits = Utilities.getReversedList(combination);
@@ -149,14 +145,17 @@ class Boss {
             }
         }
 
+        // Ordered from smallest to biggest hit, just a personal preference from previous URs
         this.finalHits = Utilities.getReversedList(combination);
         return this.finalHits;
     }
 
+    // Debug
     dumpAvailableHits() {
         this.availableHits.forEach(hit => hit.dumpInfo());
     }
 
+    // Sorting available hits from biggest to lowest damage
     genHits(unsortedHits) {
         this.availableHits = unsortedHits.sort((a, b) => b.dmg - a.dmg);
     }

@@ -10,8 +10,12 @@ class Computations {
         this.hitsDone = [];
 
         this.bosses = [];
-        this.bossesNamesOrderForOutput = []; // Keep fixed display order
+        // Hit route will not be computed by following the bosses order in game...
+        // But keep the data ordered in the outputted JSON as in game to avoid confusion
+        this.bossesNamesOrderForOutput = [];
         this.errorMarginPercentage = 1.0;
+        // There is room for (not guaranteed) improvement by tweaking the value
+        // Depends on the number of mocks and damage variety
         this.maxOverkillPercentage = 1.05;
         this.allHitRoutes = []
 
@@ -51,43 +55,6 @@ class Computations {
         this.feedAllStartingHits(parsedHits);
     }
 
-    updateHitPlayerWeight() {
-        for (const player of this.players) {
-            let lowestDmg = Infinity;
-            let topDmg = 0;
-            const hits = player.getHits();
-
-            for (const hit of hits) {
-                if (hit.dmg < lowestDmg) lowestDmg = hit.dmg;
-                if (hit.dmg > topDmg) topDmg = hit.dmg;
-            }
-
-            for (const hit of hits) {
-                hit.playerWeight = (hit.dmg - lowestDmg) / (topDmg - lowestDmg);
-            }
-        }
-    }
-
-    updateHitBossWeight(bossName) {
-        let lowestDmg = Infinity;
-        let topDmg = 0;
-
-        for (const player of this.players) {
-            const bossHits = player.getBossHits(bossName);
-            for (const hit of bossHits) {
-                if (hit.dmg < lowestDmg) lowestDmg = hit.dmg;
-                if (hit.dmg > topDmg) topDmg = hit.dmg;
-            }
-        }
-
-        for (const player of this.players) {
-            const bossHits = player.getBossHits(bossName);
-            for (const hit of bossHits) {
-                hit.bossWeight = (hit.dmg - lowestDmg) / (topDmg - lowestDmg);
-            }
-        }
-    }
-
     initBossHits(ignoredHits, boss) {
         const bossHits = [];
 
@@ -125,6 +92,7 @@ class Computations {
         return bestCombination;
     }
 
+    // Debug
     dumpHitsUsedInRoute() {
         for (const [index, hit] of this.hitsDone.entries()) {
             console.log(index, ":");
@@ -152,6 +120,7 @@ class Computations {
         }
     }
 
+    // Debug
     dumpBestHitRouteData()
     {
         for (const boss of this.allHitRoutes[0].hitRoute)
@@ -160,6 +129,7 @@ class Computations {
         }
     }
 
+    // Debug
     dumpHitRouteStats(index){
         console.log(this.bosses.length, "bosses defeated with", this.allHitRoutes[index].totalHitNumber, "hits", "with solution index", this.allHitRoutes[index].solutionIndex);
         console.log("Total bosses HP :", this.allHitRoutes[index].totalBossHP, "--- Total overkill damage :", this.allHitRoutes[index].totalOverkillDamage, "(" + this.allHitRoutes[index].totalOverkillPercentage + "%)");
@@ -169,6 +139,7 @@ class Computations {
         this.hitsDone = []
     }
 
+    // Cleanup existing hit route data before a new attempt at finding a better route
     pregenHitRoute() {
         this.resetHitsDone();
         for (const boss of this.bosses)
@@ -181,6 +152,7 @@ class Computations {
         }
     }
 
+    // Generate all combinations of hit routes
     genAllHitRoutes(baseHitRoute)
     {
         const results = []
@@ -201,6 +173,7 @@ class Computations {
         return results;
     }
 
+    // Generate all hit routes and compute one solution for each one
     generateAllHitRoutesWithStats()
     {
         const allHitRoutes = this.genAllHitRoutes(this.bosses)
@@ -221,8 +194,6 @@ class Computations {
 
             for (const boss of hitRoute) {
                 this.initBossHits(this.hitsDone, boss);
-                this.updateHitPlayerWeight();
-                this.updateHitBossWeight(boss.name);
                 const bossHits = this.computeOptimalHits(boss);
                 this.updatePlayerHitCount(bossHits);
                 this.appendToIgnoredHits(bossHits);
@@ -246,24 +217,24 @@ class Computations {
                 totalOverkillDamage: totalOverkillDamage,
                 totalOverkillPercentage: ((totalOverkillDamage / totalBossHP) * 100).toFixed(3),
                 totalHitNumber: totalHitNumber,
-                solutionIndex: solutionIndex
+                solutionIndex: solutionIndex // May be removed for real testing (debug for validation)
             })
             solutionIndex++;
         }
 
-        // TODO : Add safeguard (with maxed stats ?) if one or more bosses can't be solved with a hit route
+        // TODO : Add a failsafe (maxed overkill damage ?) if a solution can't be found for one hit route
         return results;
     }
 
+    // Hit routes solutions (5! = 120 passes)
+    // Filter from the best to the worst (overkill damage + number of hits)
     genBestHitRoute()
     {
-        // Generate ALL hit routes (5! = 120 passes)
-        // Keep the one that generates the less amount of overkill damage and hits number if possible
         this.allHitRoutes = this.generateAllHitRoutesWithStats();
 
         this.allHitRoutes.sort(function (a, b) {
-            // Hit route takes higher priority if :
-            // 1) Total overkill damage is less than 5% worse (= few million damage) than current best hit route but if at least one hit can be saved
+            // One hit route takes higher priority if :
+            // 1) Total overkill damage is less than 5% worse (~= few million damage) than current best hit route but if at least one hit can be saved
             // 2) If the number of hits are the same, smaller total overkill damage wins
 
             if (a.totalHitNumber < b.totalHitNumber) {
@@ -283,7 +254,8 @@ class Computations {
             return 1;
         });
 
-        // Filter duplicated hit routes, if any
+        // It is highly unlikely that two hit routes having the same overkill damage and hits number have
+        // variance in the used hits, so remove duplicates for easier access to alternative solutions
         const dupes = new Set();
         this.allHitRoutes = this.allHitRoutes.filter(hitRoute => {
             const key = `${hitRoute.totalOverkillDamage}-${hitRoute.totalHitNumber}}`;
@@ -294,7 +266,6 @@ class Computations {
             return true;
         });
 
-        //console.log("Number of unique solutions after filtering", this.allHitRoutes.length);
         // TODO RESORT THE boss output in hit routes to the passed bosses JSON order for consistency
     }
 
@@ -306,6 +277,7 @@ class Computations {
             best_solution: this.allHitRoutes[0]
         };
 
+        // TODO : Make the new fields creation dynamic w.r.t. X wanted best solutions variants
         if (this.allHitRoutes.length > 1)
         {
             jsonOutput.alt_solution1 = this.allHitRoutes[1];
@@ -318,13 +290,11 @@ class Computations {
 
         // Debug for validation purposes
         /*this.dumpHitRouteStats(0); // Best solution
-        this.dumpBestHitRouteData();
         this.dumpHitRouteStats(1); // Second best solution
         this.dumpHitRouteStats((this.allHitRoutes.length / 2).toFixed(0)); // Middle solution
-        this.dumpHitRouteStats(this.allHitRoutes.length - 1); // worst solution*/
+        this.dumpHitRouteStats(this.allHitRoutes.length - 1); // Worst solution*/
 
         // Print the final properly formatted JSON output
-        //
         console.log(JSON.stringify(jsonOutput, null, 4));
     }
 }

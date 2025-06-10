@@ -10,6 +10,7 @@ class Hit {
         this.bossName = bossName;
     }
 
+    // Hit JSON formatting
     getInfoInHitRoute(playerHitCount, currDmg, hitIndex, isLast, bossHP) {
         const hitDmgPercentage = +(this.dmg / bossHP * 100).toFixed(3);
         const hpLeft = Math.max(bossHP - currDmg, 0);
@@ -45,6 +46,7 @@ class Hit {
         return `${this.p1}/${this.p2}/${this.p3}/${this.p4}/${this.p5}`;
     }
 
+    // Nikkes already in an assigned hit cannot be used for next hits
     isUsingConflictualComp(otherHit) {
         const thisSet = new Set([this.p1, this.p2, this.p3, this.p4, this.p5]);
         const otherSet = new Set([otherHit.p1, otherHit.p2, otherHit.p3, otherHit.p4, otherHit.p5]);

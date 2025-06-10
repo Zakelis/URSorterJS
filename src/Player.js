@@ -45,19 +45,6 @@ class Player {
         });
     }
 
-    dumpHitsByStrongestHit() {
-        const sortedHits = this.getHits().sort((a, b) => b.dmg - a.dmg);
-        this.dumpHitsFromList(sortedHits);
-    }
-
-    dumpBossHitsByStrongestHit(bossName) {
-        const bossHits = this.getBossHits(bossName);
-        const sortedHits = bossHits.sort((a, b) => b.dmg - a.dmg);
-
-        console.log("Dumping strongest hits for player on boss", bossName);
-        sortedHits.forEach(hit => hit.dumpInfo());
-    }
-
     dumpBossHits(bossName) {
         const bossHits = this.getBossHits(bossName);
 
@@ -65,11 +52,7 @@ class Player {
         bossHits.forEach(hit => hit.dumpInfo());
     }
 
-    dumpHitsFromList(hitList) {
-        console.log("Dumping all hits from list for player", this.name);
-        hitList.forEach(hit => hit.dumpInfo());
-    }
-
+    // Debug
     dumpHits() {
         console.log("Dumping all hits for player", this.name);
         this.hits.forEach(boss => {
@@ -79,15 +62,7 @@ class Player {
         console.log("Adjusted mean of hits weights is", this.meanOfHitsWeights);
     }
 
-    getNumberOfBossHits(bossName) {
-        for (let i = 0; i < this.bossesNames.length; i++) {
-            if (bossName === this.bossesNames[i]) {
-                return this.hits[i][1].length;
-            }
-        }
-        return 0;
-    }
-
+    // Debug
     getNumberOfAllHits() {
         return this.getHits().length;
     }
