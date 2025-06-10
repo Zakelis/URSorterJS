@@ -1,5 +1,4 @@
 const { Hit } = require('./Hit');
-const Utilities = require('./Utilities');
 
 class Player {
     constructor(name, b1Name, b2Name, b3Name, b4Name, b5Name) {
@@ -58,8 +57,6 @@ class Player {
         this.hits.forEach(boss => {
             this.dumpBossHits(boss[0]);
         });
-
-        console.log("Adjusted mean of hits weights is", this.meanOfHitsWeights);
     }
 
     // Debug

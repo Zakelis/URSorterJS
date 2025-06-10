@@ -1,8 +1,5 @@
-const Utilities = require('./Utilities');
 const { Boss } = require('./Boss');
 const { Player } = require('./Player');
-const { Hit } = require('./Hit');
-const fs = require('fs');
 
 class Computations {
     constructor(bossData) {

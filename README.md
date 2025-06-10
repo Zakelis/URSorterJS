@@ -18,5 +18,3 @@ Total bosses HP : 158871514000 --- Total overkill damage : 5616486000 (3.535%)
 05/06/2025 - Taking in consideration all hit routes - 5% max overkill damage : 1 hit and 1.5b saved
 5 bosses defeated with 19 hits with solution index 1
 Total bosses HP : 158871514000 --- Total overkill damage : 3967486000 (2.497%)
-
-05/06/2025 - Taking in consideration all hit routes - 2% max overkill damage :

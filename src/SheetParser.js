@@ -1,5 +1,4 @@
 const fs = require('fs');
-const path = require('path');
 
 // TODO : Remove this crap when args will be passed as JSON
 
@@ -58,7 +57,6 @@ function parseCSV(filePath) {
 
 function parseCSVToJSON(filePath) {
 
-    const data = [];
     try {
         const raw = fs.readFileSync(filePath, 'utf-8');
 
