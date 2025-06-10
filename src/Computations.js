@@ -211,6 +211,8 @@ class Computations {
                 totalHitNumber += boss.finalHits.length;
             }
 
+            jsonOutput.bosses.sort((a, b) => this.bossesNamesOrderForOutput.indexOf(a.boss_name) - this.bossesNamesOrderForOutput.indexOf(b.boss_name));
+
             results.push({
                 hitRoute: jsonOutput.bosses,
                 totalBossHP: totalBossHP,
